@@ -5,7 +5,7 @@
  help_me()
 {
 	  echo "Usage:-"
-	  echo "$0 <Lambdda-Stack-Name> <S3CodeDeployBucket> <User> <DOMAIN><fromaddress>"
+	  echo "$0 <Lambdda-Stack-Name> <S3CodeDeployBucket> <User> <DOMAIN> <fromaddress>"
 	  exit
 }
 

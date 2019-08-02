@@ -34,64 +34,10 @@
 
 
     "Resources" :{
-          "CodeDeployLambdaServiceRole": {
-            "DependsOn" : ["CodeDeployLambdaS3"],
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-              "AssumeRolePolicyDocument": {
-               "Version" : "2012-10-17",
-               "Statement": [ {
-                "Effect": "Allow",
-                "Principal": {
-                 "Service": [ "codedeploy.us-east-1.amazonaws.com" ]
-               },
-               "Action": [ "sts:AssumeRole" ]
-             } ]
-             },
-             "ManagedPolicyArns":[
-              "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda",
-              {"Ref" : "CodeDeployLambdaS3"}
-            ],
-             "Path": "/",
-             "RoleName": "CodeDeployLambdaServiceRole"
-           }
-         },
-
-      "CodeDeployApplication": {
-        "Type": "AWS::CodeDeploy::Application",
-        "Properties": {
-          "ApplicationName" : "csye6225-Lambda-function",
-          "ComputePlatform": "Lambda"
-        }
-      },
-
-      "LambdaDeploymentGroup" : {
-        "DependsOn" : ["CodeDeployLambdaServiceRole"],
-        "Type" : "AWS::CodeDeploy::DeploymentGroup",
-        "Properties" : {
-          "ApplicationName" : "csye6225-Lambda-function",
-          "DeploymentConfigName" : "CodeDeployDefault.LambdaAllAtOnce",
-          "DeploymentGroupName": "csye6225-lambda-deployment",
-          "DeploymentStyle":{
-            "DeploymentOption" : "WITH_TRAFFIC_CONTROL",
-            "DeploymentType" : "BLUE_GREEN"
-          },
-          "AutoRollbackConfiguration": {
-            "Enabled": "true",
-            "Events": [ "DEPLOYMENT_FAILURE" ]
-          },
-          "ServiceRoleArn" : {
-            "Fn::GetAtt" : [
-              "CodeDeployLambdaServiceRole",
-              "Arn"
-            ]
-          }
-        }
-      },
-
+  
       "myLambda": {
         "Type": "AWS::Lambda::Function",
-        "DependsOn" : ["LambdaExecutionRole","CodeDeployApplication"],
+        "DependsOn" : ["LambdaExecutionRole"],
         "Properties": {
           "FunctionName":"myLambda",
           "Handler" : "EmailEvent::handleRequest",
@@ -201,49 +147,6 @@
         "RoleName": "LambdaExecutionRole"
       }
     },
-    "CirlceCICodeDeployLambda" : {
-      "Type" : "AWS::IAM::ManagedPolicy",
-      "Properties" : {
-        "ManagedPolicyName": "CirlceCI-Code-Deploy-Lambda",
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "codedeploy:RegisterApplicationRevision",
-                "codedeploy:GetApplicationRevision"
-              ],
-              "Resource": [
-                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":application:csye6225-Lambda-function" ] ]}
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "codedeploy:CreateDeployment",
-                "codedeploy:GetDeployment"
-              ],
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "codedeploy:GetDeploymentConfig"
-              ],
-              "Resource": [
-                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.OneAtATime"] ]},
-                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.HalfAtATime"] ]},
-                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.LambdaAllAtOnce"] ]}
-              ]
-            }
-          ]
-        },
-        "Users" : [ { "Ref" : "CFNUser" } ]
-      }
-    },
               "CodeDeployLambdaS3" : {
                 "Type" : "AWS::IAM::ManagedPolicy",
                 "Properties" : {
@@ -267,6 +170,7 @@
                   "Users" : [ { "Ref" : "CFNUser" } ]
                 }
               },
+
               "CirlceCILambda" : {
                 "Type" : "AWS::IAM::ManagedPolicy",
                 "Properties" : {
